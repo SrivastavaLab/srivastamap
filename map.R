@@ -6,38 +6,67 @@ library(here)
 library(plotly)
 library(htmlwidgets)
 library(htmltools)
+library(ggmap)
+library(ggrepel)
 
 # Make list of points with coordinates
+## Add PR AND SAUT
 site_tibble <- 
-  tibble::tibble(site = c("Macaé",
-                          "Ilha do Cardoso",
-                          "Regua",
-                          "Trininad-and-Tobago",
+  tibble::tibble(site = c("Macaé, Brazil",
+                          "Ilha do Cardoso, Brazil",
+                          "Regua, Brazil",
+                          "Trinidad and Tobago",
                           "Ecuador",
-                          "Pitilla",
-                          "Vancouver"),
+                          "Pitilla, Costa Rica",
+                          "Vancouver, Canada",
+                          "Petit Saut, French Guyana",
+                          "El Verde, Puerto Rico"),
                  lat = c(-22.2954,
                          -25.072,
                          -22.4529,
                          10.6923,
                          -0.615830,
                          10.983,
-                         49.2636759), 
+                         49.2636759,
+                         5.0629,
+                         18.29), 
                  lon = c(-41.4847,
-                         -47.923,
-                         -42.7703,
+                         -44.923,
+                         -39.7703,
                          -61.2896,
                          -77.823843,
                          -85.433,
-                         -123.2501258),
-                 links = c("https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdDhkdnFmejhzbHJlMjk3Mnd1ZGdsN2tsb2Ntd3lsOXgxdmNleDhjZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/LAvmVIdjhHEIw/giphy.gif",
-                           "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbjZmMXBiOHE1Ym9tZG9pMTBlMW8yeGhtbDVxcW5qYmJqd3Q5NDR6byZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/htYHL5T5bFVhG22dxn/giphy-downsized-large.gif",
-                           "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWJyanMwdHJubGpzb2xsa2RyOHdqcnBuY3NlbnpyODhvcWgzNHUwOSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VbnUQpnihPSIgIXuZv/giphy.gif",
+                         -123.2501258,
+                         -53.0475,
+                         -65.79),
+                 lablat = c(-17,
+                         -29,
+                         -22.4529,
+                         10.6923,
+                         -0.615830,
+                         10.983,
+                         49.2636759,
+                         5.0629,
+                         18.29), 
+                 lablon = c(-23,
+                         -23,
+                         -23,
+                         -35,
+                         -90,
+                         -107,
+                         -150,
+                         -22,
+                         -38),
+                 links = c("https://blogs.ubc.ca/srivastavalab/2024/01/16/lab-life/#Brazil",
+                           "https://blogs.ubc.ca/srivastavalab/2024/01/16/lab-life/#Brazil",
+                           "https://blogs.ubc.ca/srivastavalab/2024/01/16/lab-life/#Brazil",
                            "https://www.pinterest.com/pin/225461525069110466/",
                            "https://www.pinterest.com/pin/bairds-tapir--288652657340015878/",
                            "https://www.pinterest.com/pin/55732114131130278/",
-                           "https://i.kym-cdn.com/entries/icons/original/000/008/342/ihave.jpg"))
-
+                           "https://i.kym-cdn.com/entries/icons/original/000/008/342/ihave.jpg",
+                           "",
+                           ""))
+# HTML map ----------------------------------------------------------------
 # Make map
 map <- 
   site_tibble %>% 
@@ -81,6 +110,58 @@ htmlwidgets::saveWidget(widget = map,
                         file = here::here("map.html"), 
                         # Creates single html file
                         selfcontained = TRUE)
+
+
+
+
+# Image map ---------------------------------------------------------------
+# List of countries to be shown on the map
+countries <- 
+  borders("world", 
+          regions = c("Brazil", "Uruguay", "Argentina", "French Guiana", "Suriname", "Colombia", "Venezuela",
+                      "Bolivia", "Ecuador", "Chile", "Paraguay", "Peru", "Guyana", "Panama", "Costa Rica", 
+                       "Nicaragua", "Honduras", "El Salvador", "Belize", "Guatemala", "Mexico", "Trinidad and Tobago",
+                       "Caribe", "Puerto Rico", "Dominican Republic", "Haiti", "Jamaica", "Cuba", "Bahamas", "Antiles",
+                       "Dominica", "Saba", "Mexico", "Canada", "USA"), 
+          fill = "grey80", colour = "grey50")
+
+# Plot map
+basemap <- 
+  ggplot() + 
+  countries + 
+  xlab("") + 
+  ylab("") + 
+  xlim(-180, 0) +
+  geom_point(data = site_tibble, 
+             aes(x = lon, 
+                 y = lat), 
+             colour = "dodgerblue4",
+             size = 4) +
+  geom_text(data = site_tibble, 
+                  aes(x = lablon, 
+                      y = lablat, 
+                      label = site), 
+                  size = 4) +
+  theme(panel.border = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        panel.background = element_rect(fill = 'lightblue'))
+
+
+# Save
+ggsave(basemap,
+       filename = here::here("basemap.pdf"), 
+       width = 7, 
+       height = 8, 
+       dpi = 300)
+ggsave(basemap,
+       filename = here::here("basemap.png"), 
+       width = 7, 
+       height = 8, 
+       dpi = 300)
+
 
 
 # Session info -------------------------------------------------------------
